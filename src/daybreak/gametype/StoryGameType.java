@@ -1,10 +1,14 @@
 package daybreak.gametype;
 
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Random;
 
+
+
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.SlickException;
@@ -65,22 +69,30 @@ public class StoryGameType extends GameType
 
 	}
 
-	@Override
+	@Override //Render is only called when the window has focus.
 	public void render(GameContainer gc, StateBasedGame sc, Graphics g) throws SlickException
 	{
 		super.render(gc, sc, g);
 		int minuteAsMili = 60 * 1000;
 		 ttf.drawString(0,0,(totalTime - elapsedTime)/minuteAsMili + ":" + String.format("%02d", (totalTime - elapsedTime) % minuteAsMili / 1000  ));
+		g.setColor(new Color(0,255,0));
+		Rectangle rect = new Rectangle(400, 0, 10* player.getHealth(), 20); //Location of our health bar.
+		 g.fillRect(rect.x, rect.y, rect.width, rect.height);
+		g.setColor(new Color(255,255,255));
+		g.drawRect(rect.x, rect.y, 10 *player.DEFAULT_HEALTH, 20);
+		
+
 		 if(gameOver)
 		 {
 			 sc.enterState(Daybreak.VICTORY);
 		 }
+		 
+		 
 	}
 	
 	@Override
 	public void update(int deltaTime)
 	{
-		 ttf.drawString(0,0, "hello world");
 		TimeSinceSpawn += deltaTime;
 		elapsedTime += deltaTime;
 		if(!secondRoom && (elapsedTime > 3 * 60 * 1000 ))//If we haven't reached the second room after 3 minutes, open the doors
@@ -167,7 +179,7 @@ public class StoryGameType extends GameType
 		}
 		
 		
-		player.updateHealth(player.DEFAULT_HEALTH);
+		player.setHealth(player.DEFAULT_HEALTH);
 		entities.clear();
 		openDoors.add(new XYPair(77, 10));
 		
