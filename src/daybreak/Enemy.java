@@ -18,7 +18,7 @@ public class Enemy extends Entity
 	private long timeSinceMove;
 	
 	//How long to wait between calculations and moves in milliseconds
-	private static final int CALCULATION_TIME = 500;
+	private static final int CALCULATION_TIME = 3000;
 	private static final int MOVE_TIME = 100;
 	
 	//List of movements to take in (x,y) format
@@ -34,7 +34,7 @@ public class Enemy extends Entity
 	 */
 	public Enemy(Tile[][] map, Player player)
 	{
-		super(map, "gfx/protagonist.bmp");
+		super(map, "gfx/Antagonist.bmp");
 		
 		timeSinceCalculation = 0;
 		timeSinceMove = 0;
@@ -59,9 +59,7 @@ public class Enemy extends Entity
 			
 			calculatePath();
 		}
-		
-		System.out.printf("timeSinceMove = %d\n", timeSinceMove);
-		
+				
 		//Is it time to move?/ is there a movement calculated?
 		if(timeSinceMove >= MOVE_TIME && movements.size() != 0)
 		{
@@ -94,6 +92,8 @@ public class Enemy extends Entity
 			}
 		}
 		
+		//Array of coordinates used to for the predecessor array
+		
 		//Destination coordinates (player's location)
 		Coordinate dest = new Coordinate();
 		dest.x = player.getPosX();
@@ -120,7 +120,7 @@ public class Enemy extends Entity
 			cur = toCheck.poll();
 			
 			//Check each orthogonal neighbor of cur
-			for(int x = -1; x <= 1; x +=2) //Only check -1 and 1
+			for(int x = -1; x <= 1; ++x) //Only check -1 and 1
 			{
 				//Make sure nothing goes out of bounds
 				if(cur.x + x >= map[0].length || cur.x + x < 0)
@@ -128,16 +128,22 @@ public class Enemy extends Entity
 					continue;
 				}
 				
-				for(int y = -1; y <= 1; y += 2) //Only check -1 and 1
+				for(int y = -1; y <= 1; ++y) //Only check -1 and 1
 				{
+					//Make sure we're only checking orthogonals
+					if(Math.abs(x) == Math.abs(y))
+					{
+						continue;
+					}
+					
 					//Make sure nothing goes out of bounds
 					if(cur.y + y >= map.length || cur.y + y < 0)
 					{
 						continue;
 					}
 					
-					//If we already visited the coordinate, don't recheck it
-					if(visited[cur.y + y][cur.x + x])
+					//If we already visited the coordinate, don't recheck it. Also ignore spaces that you can't walk on
+					if(visited[cur.y + y][cur.x + x] || !map[cur.y + y][cur.x + x].canEnemyPass)
 					{
 						continue;
 					}
@@ -147,7 +153,7 @@ public class Enemy extends Entity
 					newCoord.y = cur.y + y;
 					
 					visited[newCoord.y][newCoord.x] = true;
-					
+
 					pred.put(newCoord, cur);
 					
 					toCheck.add(newCoord);
@@ -156,6 +162,7 @@ public class Enemy extends Entity
 					if(newCoord.equals(dest))
 					{
 						complete = true;
+						pred.put(dest, cur);
 						break;
 					}
 				}
@@ -176,7 +183,7 @@ public class Enemy extends Entity
 			return;
 		}
 		
-		cur = dest;
+		cur = pred.get(dest);
 		
 		while(pred.get(cur) != null)
 		{
